@@ -4,6 +4,7 @@ os.system("ls")
 os.system("cd /home/xlab-app-center")
 os.system("ls")
 
+os.system("cd /home/xlab-app-center/app_test/")
 os.system("pip install -r requirements.txt")
 os.system("python app_test/download.py")
 # os.system("cd /home/xlab-app-center/app_test/internvl_chat_llava")
