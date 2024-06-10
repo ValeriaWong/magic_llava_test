@@ -12,3 +12,13 @@ numpy
 openxlab
 modelscope
 timm
+openmim
+opencv-python
+termcolor
+yacs
+pyyaml
+scipy
+deepspeed==0.13.5
+pycocoevalcap
+tqdm
+peft
