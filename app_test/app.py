@@ -5,7 +5,7 @@ os.system("cd /home/xlab-app-center")
 os.system("ls")
 
 os.system("cd /home/xlab-app-center/app_test/")
-os.system("pip install -r requirements.txt")
+os.system("pip install -r /home/xlab-app-center/app_test/requirements.txt")
 os.system("python app_test/download.py")
 # os.system("cd /home/xlab-app-center/app_test/internvl_chat_llava")
 # os.system("python -m llava.serve.controller --host 0.0.0.0 --port 10000")
