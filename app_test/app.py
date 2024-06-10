@@ -1,6 +1,10 @@
 import os
 
-os.system("python /home/xlab-app-center/magic_llava_test/app_test/download.py")
+os.system("ls")
+os.system("cd /home/xlab-app-center")
+os.sysyem("ls")
+
+os.system("python ./download.py")
 os.system("cd /home/xlab-app-center/magic_llava_test/app_test/internvl_chat_llava")
 os.system("python -m llava.serve.controller --host 0.0.0.0 --port 10000")
 
