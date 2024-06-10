@@ -8,7 +8,6 @@ gradio
 transformers
 datetime
 typing
-enum
 numpy
 openxlab
 modelscope
