@@ -1,6 +1,5 @@
 argparse
 asyncio
-json
 threading
 time
 uuid
