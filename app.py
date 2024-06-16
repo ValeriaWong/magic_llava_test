@@ -18,7 +18,7 @@ from lmdeploy.utils import get_logger
 from customUtils import fetch_image_info
 
 from modelscope import snapshot_download
-model_dir = snapshot_download('OpenGVLab/Mini-InternVL-Chat-2B-V1-5', cache_dir='/home/xlab-app-center')
+model_dir = snapshot_download('OpenGVLab/InternVL-Chat-V1-5', cache_dir='/home/xlab-app-center')
 
 BATCH_SIZE = 32
 logger = get_logger('lmdeploy')
@@ -249,4 +249,4 @@ def run_local(model_path: str,
 
 if __name__ == '__main__':
     import fire
-    run_local(model_path='/home/xlab-app-center/OpenGVLab/Mini-InternVL-Chat-2B-V1-5',model_name='internvl-internlm2')
+    run_local(model_path='/home/xlab-app-center/OpenGVLab/InternVL-Chat-V1-5',model_name='internvl-internlm2')
