@@ -15,6 +15,7 @@ from lmdeploy.pytorch.engine.request import _run_until_complete
 from lmdeploy.serve.gradio.constants import CSS, THEME, disable_btn, enable_btn
 from lmdeploy.tokenizer import DetokenizeState
 from lmdeploy.utils import get_logger
+from customUtils import fetch_image_info
 
 from modelscope import snapshot_download
 model_dir = snapshot_download('OpenGVLab/Mini-InternVL-Chat-2B-V1-5', cache_dir='/home/xlab-app-center')
@@ -102,9 +103,16 @@ def run_local(model_path: str,
             history.append([text, None])
         else:
             history[-1][0].insert(0, text)
+            
+        # 如果历史中有图像，调用API获取图像信息
+        if len(history) > 0 and isinstance(history[-1][0], Image.Image):
+            image_info = await fetch_image_info(history[-1][0].filename)
+            # 将API响应追加到文本中
+            history[-1][0].insert(0, text + ' ' + image_info['description'])
+
         return chatbot, session, disable_btn, enable_btn
 
-    def chat(chatbot, session, max_new_tokens, top_p, top_k, temperature):
+    async def chat(chatbot, session, max_new_tokens, top_p, top_k, temperature):
         """Chat with AI assistant."""
         generator = engine.engine.create_instance()
         history = session._message
