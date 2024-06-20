@@ -3,6 +3,8 @@ import time
 from dataclasses import dataclass, field
 from itertools import count
 from typing import List, Literal, Optional, Tuple, Union
+import os
+import json
 
 import gradio as gr
 from packaging.version import Version, parse
@@ -17,11 +19,19 @@ from lmdeploy.tokenizer import DetokenizeState
 from lmdeploy.utils import get_logger
 from customUtils import fetch_image_info
 
+# os.system("pip install flash-attn --no-build-isolation")
+#验证SDK token
+from modelscope.hub.api import HubApi
+api = HubApi()
+api.login('c4d821fc-e29a-4215-81c1-0560e042cdb9')
+
+#模型下载
 from modelscope import snapshot_download
-model_dir = snapshot_download('OpenGVLab/InternVL-Chat-V1-5', cache_dir='/home/xlab-app-center')
+model_dir = snapshot_download('OpenGVLab/Mini-InternVL-Chat-2B-V1-5', cache_dir='/home/xlab-app-center')
 
 BATCH_SIZE = 32
 logger = get_logger('lmdeploy')
+_image_info = ''
 
 if parse(gr.__version__) >= Version('4.0.0'):
     que_kwargs = {'default_concurrency_limit': BATCH_SIZE}
@@ -81,38 +91,46 @@ def run_local(model_path: str,
                            backend_config=backend_config,
                            chat_template_config=chat_template_config,
                            tp=tp,
+                           cache_max_entry_count = 0.2,
                            **kwargs)
 
     def add_image(chatbot, session, file):
         """Append image to query."""
+        global _image_info
         chatbot = chatbot + [((file.name, ), None)]
         history = session._message
         img = Image.open(file.name).convert('RGB')
         # [([user, img, img], assistant), ...]
+
+        # 获取图片信息
+        image_info = fetch_image_info(file.name)
+        logger.info(f"Fetched image info: {image_info}")
+
+        # 将图片信息转换为字符串并适当截断以避免过长，追加到当前对话中
+        _image_info = f"{json.dumps(image_info)}"
+
         if len(history) == 0 or history[-1][-1] is not None:
             history.append([[img], None])
         else:
-            history[-1][0].append(img)
+            history[-1][0].append(img)      
         return chatbot, session
 
     def add_text(chatbot, session, text):
         """User query."""
-        chatbot = chatbot + [(text, None)]
+        global _image_info
+        image_info_prompt = f"""<IMG_CONTEXT>
+        图像信息：
+        ```{_image_info}```
+        """
+        chatbot = chatbot + [(text + image_info_prompt, None)]
         history = session._message
         if len(history) == 0 or history[-1][-1] is not None:
             history.append([text, None])
         else:
             history[-1][0].insert(0, text)
-            
-        # 如果历史中有图像，调用API获取图像信息
-        if len(history) > 0 and isinstance(history[-1][0], Image.Image):
-            image_info = await fetch_image_info(history[-1][0].filename)
-            # 将API响应追加到文本中
-            history[-1][0].insert(0, text + ' ' + image_info['description'])
-
         return chatbot, session, disable_btn, enable_btn
 
-    async def chat(chatbot, session, max_new_tokens, top_p, top_k, temperature):
+    def chat(chatbot, session, max_new_tokens, top_p, top_k, temperature):
         """Chat with AI assistant."""
         generator = engine.engine.create_instance()
         history = session._message
@@ -249,4 +267,5 @@ def run_local(model_path: str,
 
 if __name__ == '__main__':
     import fire
-    run_local(model_path='/home/xlab-app-center/OpenGVLab/InternVL-Chat-V1-5',model_name='internvl-internlm2')
+    run_local(model_path='/home/xlab-app-center/OpenGVLab/Mini-InternVL-Chat-2B-V1-5',
+              model_name='internvl-internlm2')
